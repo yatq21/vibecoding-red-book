@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>发现</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="content">
+    <div class="card" style="padding:12px;">
+      <div class="searchbar">
+        <input class="search-input" id="q" placeholder="搜索笔记/用户/话题" autocomplete="off" />
+        <button class="btn primary" id="go" type="button">搜索</button>
+      </div>
+      <div class="pills" style="margin-bottom:0;">
+        <a class="pill" href="#" data-nav="detail">#冬季穿搭</a>
+        <a class="pill" href="#" data-nav="detail">#一人食</a>
+        <a class="pill" href="#" data-nav="detail">#旅行攻略</a>
+        <a class="pill" href="#" data-nav="detail">#护肤修护</a>
+      </div>
+    </div>
+
+    <div class="section-title">热搜榜</div>
+    <div class="card list">
+      <a class="list-item" href="#" data-nav="detail">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>冬季显瘦穿搭</strong>
+          <small>12.8 万人正在看</small>
+        </div>
+      </a>
+      <a class="list-item" href="#" data-nav="detail">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>空气炸锅食谱</strong>
+          <small>9.4 万人正在看</small>
+        </div>
+      </a>
+      <a class="list-item" href="#" data-nav="detail">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>周末 Citywalk</strong>
+          <small>7.1 万人正在看</small>
+        </div>
+      </a>
+    </div>
+
+    <div class="section-title">你可能感兴趣</div>
+    <div class="feed">
+      <a class="card note" href="#" data-nav="detail">
+        <div class="note-media"><div class="badge">话题</div></div>
+        <div class="note-body">
+          <h3 class="note-title">#新年氛围感布置：一周完成客厅升级</h3>
+          <div class="note-meta">
+            <div class="meta-left"><div class="avatar"></div><span>小屋计划</span></div>
+            <div>❤ 1.6k</div>
+          </div>
+        </div>
+      </a>
+      <a class="card note" href="#" data-nav="detail">
+        <div class="note-media"><div class="badge">话题</div></div>
+        <div class="note-body">
+          <h3 class="note-title">#通勤妆容：10 分钟不出错</h3>
+          <div class="note-meta">
+            <div class="meta-left"><div class="avatar"></div><span>早八人</span></div>
+            <div>❤ 740</div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('q');
+    const go = document.getElementById('go');
+    function fakeSearch(){
+      const v = (input.value || '').trim();
+      if(!v){
+        alert('输入点关键词试试');
+        input.focus();
+        return;
+      }
+      // 原型：直接进详情页
+      window.RedBookProto?.nav('detail');
+    }
+    go.addEventListener('click', fakeSearch);
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') fakeSearch(); });
+  </script>
+  <script src="../assets/page-bridge.js"></script>
+</body>
+</html>

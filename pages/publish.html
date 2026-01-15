@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>发布</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="content">
+    <div class="card" style="padding:14px;">
+      <div class="row" style="justify-content:space-between;">
+        <strong>发布笔记</strong>
+        <button class="btn primary" type="button" id="post">发布</button>
+      </div>
+      <div class="hint" style="margin-top:6px;">原型：不会真正上传</div>
+    </div>
+
+    <div class="space"></div>
+
+    <div class="card" style="padding:14px;">
+      <div class="form">
+        <textarea class="textarea" id="text" placeholder="分享你的生活…（配合 #话题 更容易被发现）"></textarea>
+
+        <div class="upload-grid" aria-label="添加图片">
+          <div class="upload">＋</div>
+          <div class="upload">＋</div>
+          <div class="upload">＋</div>
+        </div>
+
+        <div class="row" style="flex-wrap:wrap;">
+          <span class="tag">#冬季</span>
+          <span class="tag">#穿搭</span>
+          <span class="tag">#一人食</span>
+          <span class="tag">#旅行</span>
+        </div>
+
+        <div class="row" style="justify-content:space-between;">
+          <button class="btn" type="button" id="loc">添加地点</button>
+          <button class="btn" type="button" id="vis">可见范围：公开</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="space"></div>
+
+    <div class="card list">
+      <div class="list-item">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>笔记模板</strong>
+          <small>图文 / 视频 / 清单</small>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>添加商品</strong>
+          <small>仅原型展示</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('post').addEventListener('click', ()=>{
+      const v = (document.getElementById('text').value || '').trim();
+      if(!v) return alert('先写点内容再发布');
+      alert('原型：发布成功（模拟）');
+      window.RedBookProto?.nav('home');
+    });
+    document.getElementById('loc').addEventListener('click', ()=> alert('原型：已选择地点'));
+    document.getElementById('vis').addEventListener('click', ()=> alert('原型：切换可见范围'));
+  </script>
+  <script src="../assets/page-bridge.js"></script>
+</body>
+</html>

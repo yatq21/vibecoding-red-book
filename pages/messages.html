@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>消息</title>
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+  <div class="content">
+    <div class="card" style="padding:12px;">
+      <div class="row" style="justify-content:space-between;">
+        <strong>消息</strong>
+        <button class="btn" type="button" id="clear">清空未读</button>
+      </div>
+    </div>
+
+    <div class="section-title">互动通知</div>
+    <div class="card list">
+      <a class="list-item" href="#" data-nav="detail">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>有人点赞了你的笔记</strong>
+          <small>刚刚 · ❤ +1</small>
+        </div>
+      </a>
+      <a class="list-item" href="#" data-nav="detail">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>有人收藏了你的笔记</strong>
+          <small>10 分钟前 · ☆ +1</small>
+        </div>
+      </a>
+      <a class="list-item" href="#" data-nav="detail">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>有人评论了你</strong>
+          <small>1 小时前 · “想要链接～”</small>
+        </div>
+      </a>
+    </div>
+
+    <div class="section-title">私信</div>
+    <div class="card list" id="dm">
+      <div class="list-item">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>早八人</strong>
+          <small>大衣链接可以发我吗？</small>
+        </div>
+      </div>
+      <div class="list-item">
+        <div class="thumb"></div>
+        <div class="text">
+          <strong>路过的橘子</strong>
+          <small>周末一起 citywalk！</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/page-bridge.js"></script>
+  <script>
+    document.getElementById('clear').addEventListener('click', ()=> alert('原型：未读已清空'));
+    document.getElementById('dm').addEventListener('click', ()=> alert('原型：打开聊天窗口（未实现）'));
+  </script>
+</body>
+</html>
