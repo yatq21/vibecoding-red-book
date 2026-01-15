@@ -5,13 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>发布</title>
   <link rel="stylesheet" href="../assets/styles.css" />
+  <style>
+    .cover-panel{padding:14px;}
+    .cover-grid{display:grid;grid-template-columns: 1fr;gap:10px;}
+    .cover-preview{
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(229,231,235,.9);
+      background: linear-gradient(135deg, rgba(255,36,66,.16), rgba(17,24,39,.08));
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    .cover-preview img{width:100%;display:block}
+    .seg{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .seg button{
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .seg button.active{color: var(--text); border-color: rgba(229,231,235,.8);}
+    .mini{font-size:12px;color:var(--muted);line-height:1.45}
+    .upload.has-img{padding:0;overflow:hidden;border-style:solid;}
+    .upload.has-img img{width:100%;height:100%;object-fit:cover;display:block;}
+  </style>
 </head>
 <body>
-  <div class="content">
+  <div id="app" class="content">
     <div class="card" style="padding:14px;">
       <div class="row" style="justify-content:space-between;">
         <strong>发布笔记</strong>
-        <button class="btn primary" type="button" id="post">发布</button>
+        <button class="btn primary" type="button" @click="post">发布</button>
       </div>
       <div class="hint" style="margin-top:6px;">原型：不会真正上传</div>
     </div>
@@ -20,10 +52,15 @@
 
     <div class="card" style="padding:14px;">
       <div class="form">
-        <textarea class="textarea" id="text" placeholder="分享你的生活…（配合 #话题 更容易被发现）"></textarea>
+        <textarea class="textarea" v-model="postText" placeholder="分享你的生活…（配合 #话题 更容易被发现）"></textarea>
 
         <div class="upload-grid" aria-label="添加图片">
-          <div class="upload">＋</div>
+          <div class="upload" :class="{'has-img': !!coverDataUrl}" title="封面（原型）">
+            <template v-if="coverDataUrl">
+              <img :src="coverDataUrl" alt="封面预览" />
+            </template>
+            <template v-else>＋</template>
+          </div>
           <div class="upload">＋</div>
           <div class="upload">＋</div>
         </div>
@@ -35,10 +72,62 @@
           <span class="tag">#旅行</span>
         </div>
 
-        <div class="row" style="justify-content:space-between;">
-          <button class="btn" type="button" id="loc">添加地点</button>
-          <button class="btn" type="button" id="vis">可见范围：公开</button>
+        <div class="row" style="justify-content:space-between; flex-wrap:wrap;">
+          <div class="row" style="flex-wrap:wrap;">
+            <button class="btn" type="button" @click="fakeLoc">添加地点</button>
+            <button class="btn" type="button" @click="fakeVis">可见范围：公开</button>
+          </div>
+          <button class="btn" type="button" @click="toggleCover">{{ showCover ? '收起大字封面' : '生成大字封面' }}</button>
         </div>
+      </div>
+    </div>
+
+    <div class="space" v-if="showCover"></div>
+
+    <div class="card cover-panel" v-if="showCover">
+      <div class="row" style="justify-content:space-between;">
+        <strong>大字封面生成</strong>
+        <span class="hint">Vue + Canvas</span>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="cover-grid">
+        <div>
+          <div class="mini">封面大字（建议 6~14 字，支持换行）</div>
+          <textarea class="textarea" v-model="coverText" placeholder="输入封面大字…" style="min-height: 92px;"></textarea>
+          <div class="row" style="justify-content:space-between; flex-wrap:wrap;">
+            <button class="btn" type="button" @click="pickFromPost">从正文提取</button>
+            <button class="btn" type="button" @click="randomize">换一张风格</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="mini">模板</div>
+          <div class="seg" role="tablist" aria-label="封面模板">
+            <button type="button" :class="{active: template==='bold'}" @click="template='bold'">粗体撞色</button>
+            <button type="button" :class="{active: template==='soft'}" @click="template='soft'">柔和渐变</button>
+            <button type="button" :class="{active: template==='grid'}" @click="template='grid'">网格排版</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="mini">预览（3:4）</div>
+          <div class="cover-preview">
+            <img v-if="coverDataUrl" :src="coverDataUrl" alt="生成的封面" />
+            <div v-else style="padding:14px;" class="hint">点击“生成封面”开始</div>
+          </div>
+        </div>
+
+        <div class="row" style="justify-content:space-between; flex-wrap:wrap;">
+          <button class="btn primary" type="button" @click="renderCover">生成封面</button>
+          <div class="row" style="flex-wrap:wrap;">
+            <button class="btn" type="button" :disabled="!coverDataUrl" @click="download">下载图片</button>
+            <button class="btn" type="button" :disabled="!coverDataUrl" @click="applyAsCover">设为封面</button>
+          </div>
+        </div>
+
+        <div class="mini">提示：原型中“设为封面”会把封面塞到第一格图片预览。</div>
       </div>
     </div>
 
@@ -60,18 +149,300 @@
         </div>
       </div>
     </div>
+
+    <canvas id="coverCanvas" width="900" height="1200" style="display:none;"></canvas>
   </div>
 
-  <script>
-    document.getElementById('post').addEventListener('click', ()=>{
-      const v = (document.getElementById('text').value || '').trim();
-      if(!v) return alert('先写点内容再发布');
-      alert('原型：发布成功（模拟）');
-      window.RedBookProto?.nav('home');
-    });
-    document.getElementById('loc').addEventListener('click', ()=> alert('原型：已选择地点'));
-    document.getElementById('vis').addEventListener('click', ()=> alert('原型：切换可见范围'));
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.38/dist/vue.global.prod.js"></script>
   <script src="../assets/page-bridge.js"></script>
+  <script>
+    const { createApp } = Vue;
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+    function pick(arr, i){ return arr[i % arr.length]; }
+
+    function wrapLines(ctx, text, maxWidth){
+      const raw = (text || '').replace(/\r/g,'').split('\n').map(s=>s.trim()).filter(Boolean);
+      const parts = raw.length ? raw : [''];
+
+      const lines = [];
+      for(const part of parts){
+        if(!part){ lines.push(''); continue; }
+        let current = '';
+        for(const ch of part){
+          const next = current + ch;
+          if(ctx.measureText(next).width <= maxWidth || !current){
+            current = next;
+          } else {
+            lines.push(current);
+            current = ch;
+          }
+        }
+        if(current) lines.push(current);
+      }
+      return lines;
+    }
+
+    function drawDecorations(ctx, w, h, theme, seed){
+      // deterministic pseudo-random
+      let s = seed >>> 0;
+      const rnd = () => {
+        s = (s * 1664525 + 1013904223) >>> 0;
+        return s / 0xffffffff;
+      };
+
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      const count = theme === 'grid' ? 18 : 12;
+      for(let i=0;i<count;i++){
+        const x = rnd() * w;
+        const y = rnd() * h;
+        const r = (rnd() * 46) + 10;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${0.08 + rnd()*0.18})`;
+        ctx.fill();
+      }
+      ctx.restore();
+
+      if(theme === 'grid'){
+        ctx.save();
+        ctx.globalAlpha = 0.16;
+        ctx.strokeStyle = 'rgba(255,255,255,.5)';
+        ctx.lineWidth = 2;
+        const step = 90;
+        for(let x=0;x<=w;x+=step){
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, h);
+          ctx.stroke();
+        }
+        for(let y=0;y<=h;y+=step){
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(w, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    function renderCoverToCanvas({ canvas, text, template, palette, seed }){
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // background
+      const bg = ctx.createLinearGradient(0, 0, w, h);
+      bg.addColorStop(0, palette.bg1);
+      bg.addColorStop(1, palette.bg2);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      drawDecorations(ctx, w, h, template, seed);
+
+      // header mini label
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = 'rgba(255,255,255,.92)';
+      ctx.font = '700 34px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei';
+      ctx.fillText('RED·BOOK', 56, 88);
+      ctx.restore();
+
+      // main text
+      const safeX = 56;
+      const safeW = w - safeX * 2;
+      const safeTop = 160;
+      const safeBottom = 160;
+      const safeH = h - safeTop - safeBottom;
+
+      // font sizing by template and length
+      const cleaned = (text || '').trim() || '输入一句话\n生成大字封面';
+      let fontSize = 148;
+      if (cleaned.length >= 18) fontSize = 112;
+      if (cleaned.length >= 28) fontSize = 92;
+      if (template === 'grid') fontSize = Math.min(fontSize, 120);
+
+      ctx.font = `900 ${fontSize}px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei`;
+      let lines = wrapLines(ctx, cleaned, safeW);
+
+      // clamp to 4 lines
+      if (lines.length > 4) {
+        lines = lines.slice(0, 4);
+        // add ellipsis on last line if overflow
+        const last = lines[3];
+        let ell = last;
+        while (ctx.measureText(ell + '…').width > safeW && ell.length > 1) {
+          ell = ell.slice(0, -1);
+        }
+        lines[3] = ell + '…';
+      }
+
+      const lineGap = Math.round(fontSize * 0.16);
+      const lineHeight = fontSize + lineGap;
+      const blockH = lines.length * lineHeight - lineGap;
+      let y = safeTop + (safeH - blockH) * 0.42;
+      y = clamp(y, safeTop, safeTop + safeH - blockH);
+
+      ctx.save();
+      ctx.textBaseline = 'top';
+
+      // text style per template
+      if (template === 'bold') {
+        ctx.fillStyle = palette.text;
+        ctx.shadowColor = 'rgba(17,24,39,.35)';
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 10;
+      } else if (template === 'soft') {
+        ctx.fillStyle = 'rgba(255,255,255,.96)';
+        ctx.shadowColor = 'rgba(0,0,0,.28)';
+        ctx.shadowBlur = 26;
+        ctx.shadowOffsetY = 10;
+      } else {
+        // grid
+        ctx.fillStyle = 'rgba(255,255,255,.96)';
+        ctx.shadowColor = 'rgba(0,0,0,.18)';
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 8;
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const yy = y + i * lineHeight;
+
+        if (template === 'grid') {
+          // add subtle rectangle behind each line
+          const metrics = ctx.measureText(line);
+          const padX = 18;
+          const padY = 10;
+          const boxW = clamp(metrics.width + padX * 2, 220, safeW);
+          ctx.save();
+          ctx.shadowColor = 'transparent';
+          ctx.fillStyle = 'rgba(17,24,39,.28)';
+          ctx.fillRect(safeX, yy - padY, boxW, fontSize + padY * 2);
+          ctx.restore();
+          ctx.fillStyle = 'rgba(255,255,255,.96)';
+        }
+
+        ctx.fillText(line, safeX, yy);
+
+        if (template === 'bold') {
+          // thin stroke for contrast
+          ctx.save();
+          ctx.shadowColor = 'transparent';
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = 'rgba(255,255,255,.18)';
+          ctx.strokeText(line, safeX, yy);
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+
+      // footer
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      ctx.font = '700 30px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei';
+      ctx.fillText('— 记录生活的灵感 —', 56, h - 88);
+      ctx.restore();
+    }
+
+    createApp({
+      data() {
+        return {
+          postText: '',
+          showCover: false,
+          coverText: '',
+          template: 'bold',
+          coverDataUrl: '',
+          seed: Date.now() % 100000,
+        };
+      },
+      computed: {
+        palette(){
+          const palettes = {
+            bold: [
+              { bg1: '#ff2442', bg2: '#111827', text: 'rgba(255,255,255,.96)' },
+              { bg1: '#111827', bg2: '#ff2442', text: 'rgba(255,255,255,.96)' },
+              { bg1: '#ff6b6b', bg2: '#1f2937', text: 'rgba(255,255,255,.96)' },
+            ],
+            soft: [
+              { bg1: '#ff7aa2', bg2: '#7c3aed', text: 'rgba(255,255,255,.96)' },
+              { bg1: '#60a5fa', bg2: '#fb7185', text: 'rgba(255,255,255,.96)' },
+              { bg1: '#34d399', bg2: '#60a5fa', text: 'rgba(255,255,255,.96)' },
+            ],
+            grid: [
+              { bg1: '#111827', bg2: '#374151', text: 'rgba(255,255,255,.96)' },
+              { bg1: '#1f2937', bg2: '#0f172a', text: 'rgba(255,255,255,.96)' },
+              { bg1: '#0b1220', bg2: '#7c3aed', text: 'rgba(255,255,255,.96)' },
+            ],
+          };
+          return pick(palettes[this.template] || palettes.bold, this.seed);
+        }
+      },
+      watch: {
+        template(){
+          // keep preview fresh
+          if(this.coverDataUrl) this.renderCover();
+        }
+      },
+      methods: {
+        toggleCover(){
+          this.showCover = !this.showCover;
+          if(this.showCover && !this.coverText){
+            this.pickFromPost();
+          }
+        },
+        pickFromPost(){
+          const v = (this.postText || '').trim();
+          if(!v){
+            this.coverText = '输入一句话\n生成大字封面';
+            return;
+          }
+          // take first sentence / first 18 chars
+          const s = v.split(/\n|。|！|!|？|\?/)[0].trim();
+          this.coverText = (s || v).slice(0, 22);
+        },
+        randomize(){
+          this.seed = (this.seed + 1 + Math.floor(Math.random()*1000)) % 1000000;
+          this.renderCover();
+        },
+        renderCover(){
+          const canvas = document.getElementById('coverCanvas');
+          if(!canvas) return;
+          renderCoverToCanvas({
+            canvas,
+            text: this.coverText,
+            template: this.template,
+            palette: this.palette,
+            seed: this.seed,
+          });
+          this.coverDataUrl = canvas.toDataURL('image/png');
+        },
+        download(){
+          if(!this.coverDataUrl) return;
+          const a = document.createElement('a');
+          a.href = this.coverDataUrl;
+          a.download = 'redbook-cover.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        },
+        applyAsCover(){
+          if(!this.coverDataUrl) return;
+          alert('原型：已设为封面（第一格图片）');
+        },
+        post(){
+          const v = (this.postText || '').trim();
+          if(!v) return alert('先写点内容再发布');
+          const hasCover = !!this.coverDataUrl;
+          alert(`原型：发布成功（模拟）${hasCover ? '，已包含大字封面' : ''}`);
+          window.RedBookProto?.nav('home');
+        },
+        fakeLoc(){ alert('原型：已选择地点'); },
+        fakeVis(){ alert('原型：切换可见范围'); },
+      }
+    }).mount('#app');
+  </script>
 </body>
 </html>
